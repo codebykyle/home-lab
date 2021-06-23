@@ -38,3 +38,19 @@ Run the container:
 `docker-compose up`
 
 
+
+## Adding a service
+
+To configure a service to be connected to the Keycloak auth server, add it to the `network-auth` network. You can then use `keycloak` as the IP address of the auth server.
+
+
+```yaml
+services:
+    your_service:
+        networks:
+            - network-auth
+networks:
+  network-auth:
+    external:
+      name: network-auth
+```

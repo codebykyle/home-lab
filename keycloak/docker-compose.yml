@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  keycloak:
+      build: .
+      restart: unless-stopped
+      volumes:
+        - "/home/office/Desktop/Services/keycloak/data:/var/lib/keycloak/data"
+      environment:
+        DB_VENDOR: ${DB_VENDOR}
+        DB_ADDR: ${DB_ADDR}
+        DB_DATABASE: ${DB_DATABASE}
+        DB_USER: ${DB_USER}
+        DB_PASSWORD: ${DB_PASSWORD}
+        KEYCLOAK_USER: ${KEYCLOAK_USER}
+        KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+        JDBC_PARAMS: ${JDBC_PARAMS}
+        VIRTUAL_PORT: "8080" # Nginx Reverse Proxy
+        VIRTUAL_HOST: ${VIRTUAL_HOST}  # Nginx Reverse Proxy
+      ports:
+          - 8080:8080
+      expose:
+        - "8080"
+      networks:
+        - network-auth
+        - network-nginx-lan
+        - network-database
+networks:
+  network-auth:
+    external:
+      name: network-auth
+  network-nginx-lan:
+    external:
+      name: network-nginx-lan
+  network-database:
+    external:
+      name: network-database

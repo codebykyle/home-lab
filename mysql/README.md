@@ -2,7 +2,7 @@
 
 Central mysql database server for the home network.
 
-# Running
+## Running
 
 Copy the env file:
 
@@ -24,4 +24,18 @@ Run the container:
 
 `docker-compose up`
 
+## Adding a service
 
+To configure a service to be connected to the MySQL database, add it to the `network-database` network. You can then use `mysql` as the IP address of the database.
+
+
+```yaml
+services:
+    your_service:
+        networks:
+            - network-database
+networks:
+  network-nginx-lan:
+    external:
+      name: network-database
+```

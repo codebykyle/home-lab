@@ -1,0 +1,29 @@
+version: "3.2"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    restart: unless-stopped
+    environment: 
+      VIRTUAL_HOST: "rabbitmq.lan"
+      VIRTUAL_PORT: "15672"
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ./data:/var/lib/rabbitmq/
+        - ./log:/var/log/rabbitmq
+    networks:
+      - network-nginx-lan
+      - network-events
+    expose:
+      - "15672"
+networks:
+  network-nginx-lan:
+    external:
+      name: network-nginx-lan
+  network-events:
+    external:
+      name: network-events

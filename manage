@@ -5,6 +5,7 @@ VERSION="0.1"
 WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 NETWORKS=(
+    'network-auth'
     'network-database' 
     'network-events' 
     'network-nginx-lan'
