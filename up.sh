@@ -1,0 +1,302 @@
+#! /bin/bash
+
+VERSION="0.1"
+WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+NETWORKS=(
+    'network-database' 
+    'network-events' 
+    'network-nginx-lan'
+)
+
+SERVICES=(
+    'mysql'
+    'rabbitmq'
+    'keycloak'
+    'nginx-proxy'
+)
+
+FORMAT_HEADER='\033[1;37m'
+FORMAT_TITLE='\033[0;33m'
+FORMAT_OPTION='\033[0;32m'
+FORMAT_NC='\033[0m'
+
+# Public: Create a single docker network
+# $1 - Name of the network to create
+create_network() {
+    docker network create $1
+}
+
+# Public: Create all networks in the $NETWORKS array
+create_networks() {
+   for i in "${NETWORKS[@]}"
+    do
+         create_network $i
+    done
+}
+
+# Services
+
+# Public: Call docker-compose up for a specific service
+# $1 - Name of the service to create
+service_up() {
+    cd ${WORKING_DIR}/$1 && docker-compose up -d
+}
+
+# Public: Call docker-compose down for a specific service
+# $1 - Name of the service to stop
+service_down() {
+    cd ${WORKING_DIR}/$1 && docker-compose down
+}
+
+# Public: Start a service
+# Call the docker-compose up command for all services listed in 
+# the service array
+services_up() {
+   for i in "${SERVICES[@]}"
+    do
+        service_up $i
+    done
+}
+
+# Public: Stop a service
+# Call the docker-compose down command for all services listed 
+# in the service array
+services_down() {
+   for i in "${SERVICES[@]}"
+    do
+        service_down $i
+    done
+}
+
+
+# Public: Restart a single service
+# Calls the service down and service up function
+service_restart() {
+    service_down $1
+    service_up $1
+}
+
+# Public: Restart all Docker Services
+# Call the docker-compose down and then the docker-compose up command 
+# for all services in the service array
+services_restart() {
+   for i in "${SERVICES[@]}"
+    do
+        service_restart $i
+    done
+}
+
+# Errors, messages, and help
+
+# Public: Print a header-formatted line
+# $1 - Line to print
+print_header() {
+    echo -e "${FORMAT_HEADER}$1${FORMAT_NC}"
+}
+
+# Public: Print a title-formatted line
+# $1 - Line to print
+print_title() {
+    echo -e "${FORMAT_TITLE}$1${FORMAT_NC}"
+}
+
+# Public: Print a option-formatted line
+# $1 - Line to print
+print_option() {
+    TEXT_LENGTH="${#1}"
+    MAX_PADDING=30
+    RELATIVE_PADDING="$((${MAX_PADDING} - ${TEXT_LENGTH}))"
+    CENTER_MARGIN="$(repeat_char ' ' ${RELATIVE_PADDING})"
+
+    echo -e "${FORMAT_OPTION}$1${FORMAT_NC}${CENTER_MARGIN}$2"
+}
+
+# Public: Print generic text
+# $1 - Line to print
+print_text() {
+    echo -e "$1"
+}
+
+# Public: Repeat a character n times
+# $1 Character to copy
+# $2 n times
+repeat_char() {
+    str=''
+    for i in $(eval echo {1..$2})
+    do
+        str+=$1
+    done
+
+    echo "$str"
+}
+
+# Private: This function is not implemented error
+not_implemented() {
+    echo "This function is not implemented yet" >&2
+    exit 1
+}
+
+# Private: This function is not found
+not_found() {
+    echo "Command Not Found" >&2
+    exit 1
+}
+
+# Private: The script has finished successfully
+successfully_finished() {
+    exit 0
+}
+
+# Public: List tracked services
+list_services() {
+   for i in "${SERVICES[@]}"
+    do
+        print_text "$1$i"
+    done
+}
+
+# Public: List tracked networks
+# $1 - Prefix
+list_networks() {
+   for i in "${NETWORKS[@]}"
+    do
+        print_text "$1$i"
+    done
+}
+
+list_global() {
+    LEFT_MARGIN="$(repeat_char ' ' 2)"
+    print_title "Services:"
+    list_services "${LEFT_MARGIN}"
+    print_text
+    print_title "Networks:"
+    list_networks "${LEFT_MARGIN}"
+}
+
+# Private: Print help for the network utilities
+help_networks() {
+    TEXT_BANNER="$(repeat_char '=' 5)"
+    LEFT_MARGIN="$(repeat_char ' ' 2)"
+
+    print_text 
+    print_header "Code By Kyle - Home Lab Utility - Networks" >&2
+    print_text "Version: ${FORMAT_OPTION}${VERSION}${FORMAT_NC}"
+    print_text
+    print_text "This is a tool for the bulk handling of docker networks"
+    print_text
+
+    print_title "Available Commands:"
+    print_option "${LEFT_MARGIN}ls" "List tracked networks"
+    print_option "${LEFT_MARGIN}up [service]" "Create one or all networks"
+    print_option "${LEFT_MARGIN}down [service]" "Delete one or all networks"
+    print_text 
+}
+
+# Private: Print help for the services utilities
+help_services() {
+    TEXT_BANNER="$(repeat_char '=' 5)"
+    LEFT_MARGIN="$(repeat_char ' ' 2)"
+
+    print_text 
+    print_header "Code By Kyle - Home Lab Utility - Services" >&2
+    print_text "Version: ${FORMAT_OPTION}${VERSION}${FORMAT_NC}"
+    print_text
+    print_text "This is a tool for the bulk handling of docker compose commands"
+    print_text
+
+    print_title "Available Commands:"
+    print_option "${LEFT_MARGIN}ls" "List tracked services"
+    print_option "${LEFT_MARGIN}up [service]" "Start one or all services"
+    print_option "${LEFT_MARGIN}down [service]" "Stop one or all services"
+    print_option "${LEFT_MARGIN}restart [service]" "Restart one or all services"
+    print_text 
+}
+
+# Private: Print a global help page
+help_global() {
+    TEXT_BANNER="$(repeat_char '=' 5)"
+    LEFT_MARGIN="$(repeat_char ' ' 2)"
+
+    print_text 
+    print_header "Code By Kyle - Home Lab Utility" >&2
+    print_text "Version: ${FORMAT_OPTION}${VERSION}${FORMAT_NC}"
+    print_text
+    print_text "This tool is for managing services in the home network via docker-compose."
+    print_text "View each services readme for more information about configuration and settings."
+    print_text
+
+    print_title "Available Commands:"
+    print_option "${LEFT_MARGIN}ls" "List all tracked objects"
+    print_option "${LEFT_MARGIN}networks" "Control Docker Networks"
+    print_option "${LEFT_MARGIN}services" "Control Services"
+    print_text 
+}
+
+
+# Main switch case for user arguments
+case "$1" in 
+    '') 
+        help_global
+        ;;
+    'ls') 
+        list_global
+        ;;
+    'networks')
+        case $2 in 
+            '')
+                help_networks
+                ;;
+            'ls')
+                list_networks
+                ;;
+            'up' )
+                create_networks
+                ;;
+            'down')
+                not_implemented
+                ;;
+            *)
+                not_found
+        esac
+    ;;
+    'services')
+        case $2 in 
+            '')
+                help_services
+                ;;
+            'ls')
+                list_services
+                ;;
+            'up')
+                    if [ -n "$3" ]; then
+                        service_up $3
+                    else
+                        services_up
+                    fi
+                ;;
+            'down')
+                    if [ -n "$3" ]; then
+                        service_down $3
+                    else
+                        services_down
+                    fi
+                ;;
+            'restart')
+                    if [ -n "$3" ]; then
+                        service_restart $3
+                    else
+                        services_restart
+                    fi
+                ;;
+            *)
+                not_found
+                ;;
+        esac
+    ;;
+    *)
+        not_found
+    ;;
+esac
+
+successfully_finished
