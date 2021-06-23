@@ -23,16 +23,34 @@ FORMAT_NC='\033[0m'
 
 # Public: Create a single docker network
 # $1 - Name of the network to create
-create_network() {
+network_create() {
     docker network create $1
 }
 
+# Public: Delete a specific network
+network_delete() {
+    docker network rm $1
+}
+
 # Public: Create all networks in the $NETWORKS array
-create_networks() {
+networks_create() {
    for i in "${NETWORKS[@]}"
     do
-         create_network $i
+         network_create $i
     done
+}
+
+# Public: Create all networks in the $NETWORKS array
+networks_delete() {
+   for i in "${NETWORKS[@]}"
+    do
+         network_delete $i
+    done
+}
+
+networks_recreate() {
+    networks_delete
+    networks_create
 }
 
 # Services
@@ -188,8 +206,9 @@ help_networks() {
 
     print_title "Available Commands:"
     print_option "${LEFT_MARGIN}ls" "List tracked networks"
-    print_option "${LEFT_MARGIN}up [service]" "Create one or all networks"
-    print_option "${LEFT_MARGIN}down [service]" "Delete one or all networks"
+    print_option "${LEFT_MARGIN}up [network]" "Create one or all networks"
+    print_option "${LEFT_MARGIN}down [network]" "Delete one or all networks"
+    print_option "${LEFT_MARGIN}restart [network]" "Delete one or all networks"
     print_text 
 }
 
@@ -228,6 +247,11 @@ help_global() {
 
     print_title "Available Commands:"
     print_option "${LEFT_MARGIN}ls" "List all tracked objects"
+
+    print_option "${LEFT_MARGIN}up" "Bring all networks and services up"
+    print_option "${LEFT_MARGIN}down" "Bring all networks and services down"
+    print_option "${LEFT_MARGIN}restart" "Recreate all networks and containers"
+
     print_option "${LEFT_MARGIN}networks" "Control Docker Networks"
     print_option "${LEFT_MARGIN}services" "Control Services"
     print_text 
@@ -242,6 +266,19 @@ case "$1" in
     'ls') 
         list_global
         ;;
+    'up')
+        networks_create
+        services_up
+        ;;
+    'down')
+        services_down
+        networks_delete
+        ;;
+    'restart')
+        services_down
+        networks_recreate
+        services_up
+        ;;
     'networks')
         case $2 in 
             '')
@@ -251,10 +288,25 @@ case "$1" in
                 list_networks
                 ;;
             'up' )
-                create_networks
+                if [ -n "$3" ]; then
+                    network_create $3
+                else
+                    networks_create
+                fi
                 ;;
             'down')
-                not_implemented
+                if [ -n "$3" ]; then
+                    network_delete $3
+                else
+                    networks_delete
+                fi
+                ;;
+            'restart')
+                if [ -n "$3" ]; then
+                    network_recreate $3
+                else
+                    networks_recreate
+                fi
                 ;;
             *)
                 not_found
