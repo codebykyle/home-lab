@@ -6,6 +6,7 @@ WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 NETWORKS=(
     'network-auth'
+    'network-metrics'
     'network-database' 
     'network-events' 
     'network-nginx-lan'
@@ -16,6 +17,8 @@ SERVICES=(
     'rabbitmq'
     'keycloak'
     'nginx-proxy'
+    'prometheus'
+    'grafana'
 )
 
 FORMAT_HEADER='\033[1;37m'

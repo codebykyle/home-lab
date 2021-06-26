@@ -3,6 +3,7 @@ version: '3'
 services:
     nginx-proxy:
         image: jwilder/nginx-proxy
+        container_name: nginx-lan
         restart: unless-stopped
         volumes:
           - "/var/run/docker.sock:/tmp/docker.sock:ro"

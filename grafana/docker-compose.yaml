@@ -1,0 +1,39 @@
+version: "2"
+
+services:
+    grafana:
+        container_name: metrics-grafana
+        image: grafana/grafana:latest
+        # restart: unless-stopped
+        volumes:
+            - storage-grafana:/var/lib/grafana
+            # - ./config:/etc/grafana
+        networks: 
+            - network-nginx-lan
+            - network-metrics
+        ports:
+            - 3000:3000
+        expose:
+            - "3000"
+        environment:
+            GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+            GF_USERS_ALLOW_SIGN_UP: ${GF_USERS_ALLOW_SIGN_UP}
+            GF_SERVER_DOMAIN: ${GF_SERVER_DOMAIN}
+            GF_SMTP_ENABLED: ${GF_SMTP_ENABLED}
+            GF_SMTP_HOST: ${GF_SMTP_HOST}
+            GF_SMTP_USER: ${GF_SMTP_USER}
+            GF_SMTP_PASSWORD: ${GF_SMTP_PASSWORD}
+            GF_SMTP_FROM_ADDRESS: ${GF_SMTP_FROM_ADDRESS}
+            VIRTUAL_PORT: "3000" # Nginx Reverse Proxy
+            VIRTUAL_HOST: ${VIRTUAL_HOST}  # Nginx Reverse Proxy
+networks:
+    network-metrics:
+        external:
+            name: network-metrics
+    network-nginx-lan:
+        external:
+            name: network-nginx-lan
+
+volumes:
+    storage-grafana:
+            

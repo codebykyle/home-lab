@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.21.0
+    container_name: metrics-prometheus
+    environment: 
+        VIRTUAL_PORT: "9090"
+        VIRTUAL_HOST: "prometheus.lan"
+    restart: unless-stopped
+    ports:
+      - 9090:9090
+    volumes:
+      - ./config:/etc/prometheus
+      - storage-prometheus:/prometheus
+    networks: 
+        - network-metrics
+        - network-nginx-lan
+    command: --web.enable-lifecycle  --config.file=/etc/prometheus/prometheus.yml
+
+
+networks:
+    network-metrics:
+        external:
+            name: network-metrics
+    network-nginx-lan:
+        external:
+            name: network-nginx-lan
+volumes:
+    storage-prometheus:

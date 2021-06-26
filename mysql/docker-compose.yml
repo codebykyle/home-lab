@@ -1,7 +1,7 @@
 version: '3'
 services:
   mysql:
-    container_name: office_mysql
+    container_name: database-mysql
     restart: unless-stopped
     image: mysql:latest
     environment:
@@ -9,7 +9,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_PASS: ${MYSQL_PASS}
     volumes:
-      - "./data:/var/lib/mysql"
+      - "storage-mysql:/var/lib/mysql"
     ports:
       - "3306:3306"
     networks:
@@ -19,4 +19,6 @@ networks:
   network-database:
     external:
       name: network-database
-      
+
+volumes:
+  storage-mysql:

@@ -4,6 +4,7 @@ services:
   keycloak:
       build: .
       restart: unless-stopped
+      user: "1000:1000"
       volumes:
         - "/home/office/Desktop/Services/keycloak/data:/var/lib/keycloak/data"
       environment:
